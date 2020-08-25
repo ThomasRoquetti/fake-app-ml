@@ -8,17 +8,17 @@ Repositório de desenvolvimento do projeto FakeApp ML
 O usuário poderá enviar textos duvidosos para uma analise feita com modelos de machine learning, os resultados desta consulta, devem ser exibidas ao usuário em tela.
 
 ### Requeridos
-Conda => 4.8.4
-Python => 3.8
-
+- Conda => 4.8.4
+- Python => 3.8
 
 ### Setup
 TBD
 
 ### Dependências
+TBD
 
 ### Instruções
 Para desenvolvimento use a branch `dev`
 
 ### Versionamento
-[0.0.1] => Criação do readme.md e branch dev
+- [0.0.1] => Criação do readme.md e branch dev
