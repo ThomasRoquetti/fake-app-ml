@@ -2,7 +2,7 @@
 Repositório de desenvolvimento do projeto FakeApp ML
 
 ### Versão
-0.0.1
+0.0.2
 
 ### Briefing
 O usuário poderá enviar textos duvidosos para uma analise feita com modelos de machine learning, os resultados desta consulta, devem ser exibidas ao usuário em tela.
@@ -21,4 +21,5 @@ TBD
 Para desenvolvimento use a branch `dev`
 
 ### Versionamento
+- [0.0.2] => Repositório fake corpus clonado
 - [0.0.1] => Criação do readme.md e branch dev
