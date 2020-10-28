@@ -9,28 +9,27 @@ header2 = ["indice","document_score","document_magnitude"]
 
 header3 = ["indice","representative_name","entity_type","entity_salience"]
 
-rmHeader = ["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity", "indice"]
+rmHeader = ["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity"]
 
 import csv
 import os
 import pandas as pd
 
-# with open('finalCSV.csv', 'w', newline='') as f_output:
-#     csv_output = csv.writer(f_output)
-#     csv_output.writerow(header)
 
-#     for x in range(1, 3603):
-#         try:
-#             filepath = os.path.normpath(r"C:\\Users\\thobo\\Documents\\TCC\\fake-app-ml\\fake-corpus-br\\full_texts\\{}\\{}.txt".format('fake', x))
-
-#             with open(filepath, 'r', newline='') as f_text:
-#                 csv_text = csv.reader(f_text, delimiter='\n', skipinitialspace=True)
-#                 csv_output.writerow(row[0] for row in csv_text)
-#         except:
-#             pass
+# Merge toguether csv for fake
 
 fakeMeta = pd.read_csv("fake-meta-corpus.csv") 
-print(fakeMeta)
-print(type(fakeMeta))
 fakeMeta.drop(["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity"], axis=1, inplace=True)
+fakeMeta.set_index('indice', inplace=True)
 print(fakeMeta)
+
+fakeEntity = pd.read_csv("fake_entity_gc.csv")
+fakeEntity.set_index("indice", inplace=True)
+print(fakeEntity)
+
+fakeSentiment = pd.read_csv("fake_sentiment_gc.csv")
+fakeSentiment.set_index("indice", inplace=True)
+print(fakeSentiment)
+
+fakeMerged = fakeMeta.merge(fakeSentiment, left_index=True, right_index=True)
+print(fakeMerged)
