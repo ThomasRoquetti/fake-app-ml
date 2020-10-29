@@ -19,7 +19,7 @@ import pandas as pd
 # Merge toguether csv for fake
 
 fakeMeta = pd.read_csv("fake-meta-corpus.csv") 
-fakeMeta.drop(["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity"], axis=1, inplace=True)
+fakeMeta.drop(["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity",'category'], axis=1, inplace=True)
 fakeMeta.set_index('indice', inplace=True)
 
 fakeEntity = pd.read_csv("fake-entity-processed.csv")
@@ -32,6 +32,7 @@ fakeMerged = fakeMeta.merge(fakeSentiment, left_index=True, right_index=True)
 fakeMerged = fakeMerged.merge(fakeEntity, left_index=True, right_index=True)
 
 fakeMerged = fakeMerged.drop(fakeMerged.index[[0,3,16,20,23,37,39,90]])
+fakeMerged['classification'] = 'FAKE'
 
 # i=1
 # for index, row in fakeMerged.iterrows():
@@ -45,7 +46,7 @@ fakeMerged = fakeMerged.drop(fakeMerged.index[[0,3,16,20,23,37,39,90]])
 
 # Merge toguether csv for true 
 trueMeta = pd.read_csv("true-meta-corpus.csv") 
-trueMeta.drop(["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity"], axis=1, inplace=True)
+trueMeta.drop(["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity",'category'], axis=1, inplace=True)
 trueMeta.set_index('indice', inplace=True)
 
 trueEntity = pd.read_csv("true-entity-processed.csv")
@@ -56,6 +57,7 @@ trueSentiment.set_index("indice", inplace=True)
 
 trueMerged = trueMeta.merge(trueSentiment, left_index=True, right_index=True)
 trueMerged = trueMerged.merge(trueEntity, left_index=True, right_index=True)
+trueMerged['classification'] = 'TRUE'
 
 # i=1
 # for index, row in trueMerged.iterrows():
@@ -68,5 +70,5 @@ trueMerged.reset_index(drop=True, inplace=True)
 #print(trueMerged)
 
 merged = pd.concat([fakeMerged, trueMerged])
-merged.to_csv("finalCSVforTraining.csv")
+merged.to_csv("finalCSVforTraining2.csv")
 
