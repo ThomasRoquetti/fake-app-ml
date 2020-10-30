@@ -4,38 +4,40 @@ import os
 import csv
 
 
-def analyze_sentiment(text_content, csv_output):
-    """
-    Analyzing Sentiment in a String
-    """
 
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS']="credentials/google.json"
+"""
+Analyzing Sentiment in a String
+"""
 
-    client = language_v1.LanguageServiceClient()
+os.environ['GOOGLE_APPLICATION_CREDENTIALS']="credentials/google.json"
 
-    type_ = enums.Document.Type.PLAIN_TEXT
+client = language_v1.LanguageServiceClient()
 
-    language = "pt"
-    document = {"content": text_content, "type": type_, "language": language}
+type_ = enums.Document.Type.PLAIN_TEXT
 
-    # Available values: NONE, UTF8, UTF16, UTF32
-    encoding_type = enums.EncodingType.UTF8
-    response = client.analyze_sentiment(document, encoding_type=encoding_type)
+text_content= "A AstraZeneca PLC assinou um acordo exclusivo com a chinesa Shenzhen Kangtai Biological Products para fornecer sua vacina candidata COVID-19 na China continental, informou a gigante farmacêutica britânica.\nPara atender à demanda do mercado na China, Shenzhen Kangtai é obrigada a garantir uma capacidade de produção anual de pelo menos 100 milhões de doses da injeção experimental AZD1222, que a AstraZeneca co-desenvolveu com pesquisadores da Universidade de Oxford, até o final deste ano, e uma capacidade de pelo menos 200 milhões de doses até o final do próximo ano, disse a AstraZeneca em um comunicado no site de mídia social chinês WeChat.\nAs duas empresas também vão explorar a possibilidade de cooperação na vacina candidata em outros mercados, disse a AstraZeneca.\nA AstraZeneca buscará produzir até 2 bilhões de doses da vacina até o fim de 2021. \nO laboratório já possui acordos selados com Estados Unidos (300 milhões de doses), União Europeia (300 milhões de doses), Reino Unido (100 milhões de doses) e Brasil (100 milhões de doses)"
 
-    # Get overall sentiment of the input document
-    print(u"Document sentiment score: {}".format(response.document_sentiment.score))
-    print(
-        u"Document sentiment magnitude: {}".format(
-            response.document_sentiment.magnitude
-        )
+language = "pt"
+document = {"content": text_content, "type": type_, "language": language}
+
+# Available values: NONE, UTF8, UTF16, UTF32
+encoding_type = enums.EncodingType.UTF8
+response = client.analyze_sentiment(document, encoding_type=encoding_type)
+
+# Get overall sentiment of the input document
+print(u"Document sentiment score: {}".format(response.document_sentiment.score))
+print(
+    u"Document sentiment magnitude: {}".format(
+        response.document_sentiment.magnitude
     )
-    # Get sentiment for all sentences in the document
-    for sentence in response.sentences:
-        print(u"Sentence text: {}".format(sentence.text.content))
-        print(u"Sentence sentiment score: {}".format(sentence.sentiment.score))
-        print(u"Sentence sentiment magnitude: {}".format(sentence.sentiment.magnitude))
+)
+# Get sentiment for all sentences in the document
+for sentence in response.sentences:
+    print(u"Sentence text: {}".format(sentence.text.content))
+    print(u"Sentence sentiment score: {}".format(sentence.sentiment.score))
+    print(u"Sentence sentiment magnitude: {}".format(sentence.sentiment.magnitude))
 
-    csv_output.writerow(response.document_sentiment.score, response.document_sentiment.magnitude, response.sentences.text.content, response.sentences.sentiment.score, response.sentences.magnitude)
+#csv_output.writerow(response.document_sentiment.score, response.document_sentiment.magnitude, response.sentences.text.content, response.sentences.sentiment.score, response.sentences.magnitude)
 
     
 
