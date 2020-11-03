@@ -1,29 +1,3 @@
-""""
-number of tokens -> done,
-number of words without punctuation -> done,
-number of types -> need to remove,
-number of words in upper case -> done,
-number of verbs -> tag: VERB,
-number of subjuntive and imperative verbs -> MOOD: SUBJUNCTIVE || IMPERATIVE,
-number of nouns -> tag: NOUN,
-number of adjectives -> tag: ADJ,
-number of adverbs -> tag: ADV,
-number of modal verbs -> label: VMOD,
-number of singular first and second personal pronouns ->tag: PRON $$ Person: FIRST || SECOND $$ NUMBER: SINGULAR ,
-number of plural first personal pronouns -> tag: PRON $$ Person: FIRST $$ NUMBER: PLURAL,
-number of pronouns -> tag: PRON,
-pausality -> done,
-number of chracteres -> done,
-average sentence length -> done,
-average word length -> done,
-percentage of news with speeling errors -> need to remove,
-document_score -> done,
-document_magnitude -> done,
-EVENT -> done,
-LOCATION -> done,
-ORGANIZATION -> done,
-PERSON -> done
-"""
 from google.protobuf.json_format import MessageToDict
 from google.cloud.language_v1 import enums
 import string
