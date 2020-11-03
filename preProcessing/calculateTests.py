@@ -9,11 +9,17 @@ region = boto3.Session().region_name
 sm = boto3.Session().client(service_name='sagemaker',region_name=region)
 sm_rt = boto3.Session().client('runtime.sagemaker', region_name=region)
 
-ep_name = "automl-dm-ep-30-03-36-26"
+ep_name = "automl-dm-ep-03-03-31-06"
 
+# automl_test = pd.read_csv('preProcessing/automl-test.csv')
+# automl_test.drop('indice', axis=1, inplace=True)
+# automl_test.to_csv(r'preProcessing/automl-test2.csv', index=False)
+
+"""automl-test2 => Accuracy: 0.9506, Precision: 0.9557, Recall: 0.9831, F1: 0.9692 #"""
+"""Accuracy: 0.9479, Precision: 0.9531, Recall: 0.7798, F1: 0.8578"""
 tp = tn = fp = fn = count = 0
 
-with open('src/automl-test.csv') as f:
+with open('userRe/automl-test_processeced.csv') as f:
     lines = f.readlines()
     for l in lines[1:]:   # Skip header
         l = l.split(',')  # Split CSV line into features

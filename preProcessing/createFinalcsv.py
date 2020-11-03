@@ -19,7 +19,7 @@ import pandas as pd
 # Merge toguether csv for fake
 
 fakeMeta = pd.read_csv("fake-meta-corpus.csv") 
-fakeMeta.drop(["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity",'category'], axis=1, inplace=True)
+fakeMeta.drop(["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity",'category','percentage of news with speeling errors', 'number of types','number of words without punctuation'], axis=1, inplace=True)
 fakeMeta.set_index('indice', inplace=True)
 
 fakeEntity = pd.read_csv("fake-entity-processed.csv")
@@ -46,7 +46,7 @@ fakeMerged['classification'] = 'FAKE'
 
 # Merge toguether csv for true 
 trueMeta = pd.read_csv("true-meta-corpus.csv") 
-trueMeta.drop(["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity",'category'], axis=1, inplace=True)
+trueMeta.drop(["author", "link", "date of publication", "number of links inside the news", "emotiveness", "diversity",'category','percentage of news with speeling errors', 'number of types','number of words without punctuation'], axis=1, inplace=True)
 trueMeta.set_index('indice', inplace=True)
 
 trueEntity = pd.read_csv("true-entity-processed.csv")
@@ -70,5 +70,5 @@ trueMerged.reset_index(drop=True, inplace=True)
 #print(trueMerged)
 
 merged = pd.concat([fakeMerged, trueMerged])
-merged.to_csv("finalCSVforTraining2.csv")
+merged.to_csv("finalCSVforTraining3.csv")
 

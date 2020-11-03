@@ -1,22 +1,22 @@
 """"
 number of tokens -> done,
-number of words without punctuation,
-number of types,
-number of words in upper case,
-number of verbs,
-number of subjuntive and imperative verbs,
-number of nouns,
-number of adjectives,
-number of adverbs,
-number of modal verbs,
-number of singular first and second personal pronouns,
-number of plural first personal pronouns,
-number of pronouns,
-pausality,
-number of chracteres -> need to remove punctuation,
-average sentence length -> got number of sentences,
-average word length,
-percentage of news with speeling errors,
+number of words without punctuation -> done,
+number of types -> need to remove,
+number of words in upper case -> done,
+number of verbs -> tag: VERB,
+number of subjuntive and imperative verbs -> MOOD: SUBJUNCTIVE || IMPERATIVE,
+number of nouns -> tag: NOUN,
+number of adjectives -> tag: ADJ,
+number of adverbs -> tag: ADV,
+number of modal verbs -> label: VMOD,
+number of singular first and second personal pronouns ->tag: PRON $$ Person: FIRST || SECOND $$ NUMBER: SINGULAR ,
+number of plural first personal pronouns -> tag: PRON $$ Person: FIRST $$ NUMBER: PLURAL,
+number of pronouns -> tag: PRON,
+pausality -> done,
+number of chracteres -> done,
+average sentence length -> done,
+average word length -> done,
+percentage of news with speeling errors -> need to remove,
 document_score -> done,
 document_magnitude -> done,
 EVENT -> done,
@@ -26,102 +26,137 @@ PERSON -> done
 """
 from google.protobuf.json_format import MessageToDict
 from google.cloud.language_v1 import enums
-from apiCall import ApiCall
+import string
+import nltk
 import json
 import re
 
-#set api
-apiCall = ApiCall()
+ #set api
 
-with open ('userRe/userRequest.json','r',encoding="utf8") as userRequest:
-    text = json.load(userRequest)
-    text = text['text']
+class UserProcessor():
 
-googleApi = apiCall.googleApi(text_content=text)
-
-client = googleApi['client']
-document = googleApi['document']
-encoding = googleApi['encoding_type']
+    #analyze sentiment
+    def sentiment (self, client, document, encoding):
+        response = client.analyze_sentiment(document, encoding_type=encoding)
+        return {"document_score":response.document_sentiment.score, "document_magnitude":response.document_sentiment.magnitude}
 
 
-#analyze sentiment
-def sentiment (client, document, encoding):
-    response = client.analyze_sentiment(document, encoding_type=encoding)
-    return {"document_score":response.document_sentiment.score, "document_magnitude":response.document_sentiment.magnitude}
+    #analyze entities
+    def entities (self, client, document, encoding):
+        response = client.analyze_entities(document, encoding_type=encoding)
+        types = {'EVENT':[0,0],'LOCATION':[0,0],'ORGANIZATION':[0,0],'PERSON':[0,0]}
+
+        for entity in response.entities:
+            # Get entity type, PERSON, LOCATION, ORGANIZATION, EVENT
+            name = enums.Entity.Type(entity.type).name
+            if name == 'EVENT' or name == 'LOCATION' or name == 'ORGANIZATION' or name == 'PERSON':
+                types[name][1] += 1
+                types[name][0] += entity.salience
+
+        types['EVENT'] = types['EVENT'][0] / types['EVENT'][1]
+        types['LOCATION'] = types['LOCATION'][0] / types['LOCATION'][1]
+        types['ORGANIZATION'] = types['ORGANIZATION'][0] / types['ORGANIZATION'][1]
+        types['PERSON'] = types['PERSON'][0] / types['PERSON'][1]
+
+        return types
+
+    #analyze syntax
+    def syntax (self, client, document, encoding):
+        response = client.analyze_syntax(document, encoding_type=encoding)
+        response = MessageToDict(response)
+
+        number_of_verbs = 0
+        number_of_subj_imp_verbs = 0
+        number_of_nouns = 0
+        number_of_adjectives = 0
+        number_of_adverbs = 0
+        number_of_modal_verbs = 0
+        number_of_singular_fs_pron = 0
+        number_of_plural_f_pron = 0
+        number_of_pronouns = 0
+
+        for token in response['tokens']:
+            
+            if 'dependencyEdge' in token:
+                if 'label' in token['dependencyEdge']:
+                    if token['dependencyEdge']['label'] == 'VMOD':
+                        number_of_modal_verbs += 1
+
+            if 'partOfSpeech' in token:
+                if 'tag' in token['partOfSpeech']:
+                    if token['partOfSpeech']['tag'] == 'VERB':
+                        number_of_verbs += 1
+
+                    if token['partOfSpeech']['tag'] == 'NOUN':
+                        number_of_nouns += 1
+
+                    if token['partOfSpeech']['tag'] == 'ADJ':
+                        number_of_adjectives += 1
+
+                    if token['partOfSpeech']['tag']== 'ADV':
+                        number_of_adverbs += 1
+
+                    if token['partOfSpeech']['tag'] == 'PRON':
+                        number_of_pronouns += 1
+
+                    if 'mood' in token['partOfSpeech']:
+                        if token['partOfSpeech']['tag'] == 'VERB' and token['partOfSpeech']['mood'] == 'SUBJUNCTIVE' or token['partOfSpeech']['mood'] == 'IMPERATIVE':
+                            number_of_subj_imp_verbs += 1
+
+                    if 'person' in token['partOfSpeech'] and 'number' in token['partOfSpeech']:
+                        if token['partOfSpeech']['tag'] == 'PRON' and token['partOfSpeech']['person'] == 'FIRST' and token['partOfSpeech']['number'] == 'PLURAL':
+                            number_of_plural_f_pron += 1
+                        
+                        if token['partOfSpeech']['tag'] == 'PRON' and token['partOfSpeech']['number'] == 'SINGULAR' and token['partOfSpeech']['person'] == 'FIRST' or token['partOfSpeech']['person'] == 'SECOND':
+                            number_of_singular_fs_pron += 1
+
+        syntax = {
+            'number_of_verbs': number_of_verbs,
+            'number_of_subj_imp_verbs': number_of_subj_imp_verbs,
+            'number_of_nouns': number_of_nouns,
+            'number_of_adjectives': number_of_adjectives,
+            'number_of_adverbs': number_of_adverbs,
+            'number_of_modal_verbs': number_of_modal_verbs,
+            'number_of_plural_f_pron': number_of_plural_f_pron,
+            'number_of_singular_fs_pron': number_of_singular_fs_pron,
+            'number_of_pronouns': number_of_pronouns
+        }
+
+        return syntax
 
 
-#analyze entities
-def entities (client, document, encoding):
-    response = client.analyze_entities(document, encoding_type=encoding)
-    types = {'EVENT':[0,0],'LOCATION':[0,0],'ORGANIZATION':[0,0],'PERSON':[0,0]}
+    #analyze syntax with nltk
+    def text_lens(self, document):
 
-    for entity in response.entities:
-        # Get entity type, PERSON, LOCATION, ORGANIZATION, EVENT
-        name = enums.Entity.Type(entity.type).name
-        if name == 'EVENT' or name == 'LOCATION' or name == 'ORGANIZATION' or name == 'PERSON':
-            types[name][1] += 1
-            types[name][0] += entity.salience
+        number_of_tokens = len(nltk.word_tokenize(document['content']))
 
-    types['EVENT'] = types['EVENT'][0] / types['EVENT'][1]
-    types['LOCATION'] = types['LOCATION'][0] / types['LOCATION'][1]
-    types['ORGANIZATION'] = types['ORGANIZATION'][0] / types['ORGANIZATION'][1]
-    types['PERSON'] = types['PERSON'][0] / types['PERSON'][1]
+        clean_text = re.sub('\W+',' ', document['content'])
+        words = clean_text.split()
+        average_word_len = sum(len(word) for word in words) / len(words)
 
-    return types
+        sents = document['content'].split('.')
+        average_sent_len = sum(len(x.split()) for x in sents) / len(sents)
 
-def syntax (client, document, encoding):
-    document['content'] = re.sub('\W+',' ', document['content'])
-    response = client.analyze_syntax(document, encoding_type=encoding)
-    #len of things
-    number_of_tokens = len(response.tokens)
-    number_of_sentences = len(response.sentences)
-    number_of_characters = len(document['content'])
+        number_words_in_uppercase = sum(map(str.isupper, words))
 
-    # Loop through tokens returned from the API
-    with open ('userRequest.json','w',encoding="utf8") as userRequest:
-        text = MessageToDict(response)
-        json.dump(text, userRequest, ensure_ascii=False)
+        number_of_chars = len(''.join(e for e in document['content'] if e.isalnum()))
 
-    for sentence in response.sentences:
-        cleanString = re.sub('\W+',' ', sentence.text.content)
-        print(cleanString)
-        input()
-    for token in response.tokens:
-        # Get the text content of this token. Usually a word or punctuation.
-        text = token.text
-        print(u"Token text: {}".format(text.content))
-        # Get the part of speech information for this token.
-        # Parts of spech are as defined in:
-        # http://www.lrec-conf.org/proceedings/lrec2012/pdf/274_Paper.pdf
-        part_of_speech = token.part_of_speech
-        # Get the tag, e.g. NOUN, ADJ for Adjective, et al.
-        print(
-            u"Part of Speech tag: {}".format(
-                enums.PartOfSpeech.Tag(part_of_speech.tag).name
-            )
-        )
-        # Get the voice, e.g. ACTIVE or PASSIVE
-        print(u"Voice: {}".format(enums.PartOfSpeech.Voice(part_of_speech.voice).name))
-        # Get the tense, e.g. PAST, FUTURE, PRESENT, et al.
-        print(u"Tense: {}".format(enums.PartOfSpeech.Tense(part_of_speech.tense).name))
-        # See API reference for additional Part of Speech information available
-        # Get the lemma of the token. Wikipedia lemma description
-        # https://en.wikipedia.org/wiki/Lemma_(morphology)
-        print(u"Lemma: {}".format(token.lemma))
-        # Get the dependency tree parse information for this token.
-        # For more information on dependency labels:
-        # http://www.aclweb.org/anthology/P13-2017
-        dependency_edge = token.dependency_edge
-        print(u"Head token index: {}".format(dependency_edge.head_token_index))
-        print(
-            u"Label: {}".format(enums.DependencyEdge.Label(dependency_edge.label).name)
-        )
-    print("number_of_tokens: "+str(number_of_tokens))
-    print("number_of_sentences: "+str(number_of_sentences))
-    print("number_of_characters: "+str(number_of_characters))
-    return 0 #para de da erro pora
+        lengths = {
+            'number_of_tokens': number_of_tokens,
+            'number_of_words_in_uppercase': number_words_in_uppercase,
+            'number_of_chars': number_of_chars,
+            'average_sent_len': average_sent_len,
+            'average_word_len': average_word_len,
+        }
+
+        return lengths
+
+    def pausality_calc (self, document):
+        number_of_setences = len(document['content'].split('.'))
+        count = lambda l1,l2: sum([1 for x in l1 if x in l2])
+        quantity_punctuation = count(document['content'],set(string.punctuation)) 
+        
+        return {'pausality':quantity_punctuation / number_of_setences}
 
 
-#sentiment = sentiment(client,document,encoding)  ---ta comentado pra n ficar puxando da api, tem que descomentar dps
-#entities = entities(client,document,encoding)
-syntax = syntax(client,document,encoding)
+    
