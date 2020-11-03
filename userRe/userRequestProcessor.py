@@ -37,12 +37,14 @@ class UserProcessor():
 
     #analyze sentiment
     def sentiment (self, client, document, encoding):
+        print('Starting sentiment analyze')
         response = client.analyze_sentiment(document, encoding_type=encoding)
         return {"document_score":response.document_sentiment.score, "document_magnitude":response.document_sentiment.magnitude}
 
 
     #analyze entities
     def entities (self, client, document, encoding):
+        print('Starting entity analyze')
         response = client.analyze_entities(document, encoding_type=encoding)
         types = {'EVENT':[0,0],'LOCATION':[0,0],'ORGANIZATION':[0,0],'PERSON':[0,0]}
 
@@ -62,6 +64,7 @@ class UserProcessor():
 
     #analyze syntax
     def syntax (self, client, document, encoding):
+        print('Starting syntax analyze')
         response = client.analyze_syntax(document, encoding_type=encoding)
         response = MessageToDict(response)
 
@@ -127,7 +130,7 @@ class UserProcessor():
 
     #analyze syntax with nltk
     def text_lens(self, document):
-
+        print('Starting text_lens analyze')
         number_of_tokens = len(nltk.word_tokenize(document['content']))
 
         clean_text = re.sub('\W+',' ', document['content'])
@@ -152,6 +155,7 @@ class UserProcessor():
         return lengths
 
     def pausality_calc (self, document):
+        print('Starting pausality analyze')
         number_of_setences = len(document['content'].split('.'))
         count = lambda l1,l2: sum([1 for x in l1 if x in l2])
         quantity_punctuation = count(document['content'],set(string.punctuation)) 
