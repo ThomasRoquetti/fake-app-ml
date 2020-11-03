@@ -1,7 +1,0 @@
-{
-    "predicted_label": "FAKE",
-    "probabilidade": {
-        "TRUE": 3.03,
-        "FAKE": 96.96
-    }
-}
