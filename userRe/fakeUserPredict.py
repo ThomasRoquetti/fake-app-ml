@@ -5,29 +5,36 @@ import sagemaker
 import os, sys
 
 
-sess   = sagemaker.Session()
-bucket = sess.default_bucket()                     
-prefix = 'sagemaker/automl-dm'
-region = boto3.Session().region_name
+class UserPredict():
 
-# Role when working on a notebook instance
-role = "arn:aws:iam::388295382521:role/service-role/AmazonSageMaker-ExecutionRole-20201029T114207"
+    def predict(self, parameters):
+        print('Starting Prediction')
+        region = boto3.Session().region_name
+        
+        sm = boto3.Session().client(service_name='sagemaker',region_name=region)
+        sm_rt = boto3.Session().client('runtime.sagemaker', region_name=region)
 
-sm = boto3.Session().client(service_name='sagemaker',region_name=region)
-sm_rt = boto3.Session().client('runtime.sagemaker', region_name=region)
+        ep_name = "automl-dm-ep-03-03-31-06"
+                        
+        string_parameters = [str(i) for i in parameters] 
+        parameters = ','.join(string_parameters)
 
-ep_name = "automl-dm-ep-29-19-27-44"
+        response = sm_rt.invoke_endpoint(EndpointName=ep_name, ContentType='text/csv', Accept='text/csv', Body=parameters)
+        #print(response)
+        userResponse = response['Body'].read().decode("utf-8")
 
-l = "sociedade_cotidiano,166,146,110,1,28,0,47,8,6,5,0,0,6,2.85714,740,20.8571,5.06849,0.0,0.0,1.2000000476837158,0.017082443693652753,,0.011033521344264349,0.01707558892667294"
-                
-response = sm_rt.invoke_endpoint(EndpointName=ep_name, ContentType='text/csv', Accept='text/csv', Body=l)
-response = response['Body'].read().decode("utf-8")
-print(response)
+        characters = ["'",'"'," ","[","]"]
+        for character in characters:
+            userResponse = userResponse.replace(character, "")
 
-sm.get_waiter('endpoint_in_service').wait(EndpointName=ep_name)
+        userResponse = userResponse.rstrip("\n")
+        userResponse = userResponse.split(',')
+        print(userResponse)
 
-resp = sm.describe_endpoint(EndpointName=ep_name)
-status = resp['EndpointStatus']
+        sm.get_waiter('endpoint_in_service').wait(EndpointName=ep_name)
 
-print("Endpoint ARN   : " + resp['EndpointArn'])
-print("Endpoint status: " + status)
+        resp = sm.describe_endpoint(EndpointName=ep_name)
+        status = resp['EndpointStatus']
+        print(status)
+
+        return userResponse
