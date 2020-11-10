@@ -2,7 +2,7 @@
 Repositório de desenvolvimento do projeto FakeApp ML
 
 ### Versão
-0.0.2
+0.1.0
 
 ### Briefing
 O usuário poderá enviar textos duvidosos para uma analise feita com modelos de machine learning, os resultados desta consulta, devem ser exibidas ao usuário em tela.
@@ -15,7 +15,8 @@ O usuário poderá enviar textos duvidosos para uma analise feita com modelos de
 TBD
 
 ### Dependências
-TBD
+pip install pipenv
+pipenv install
 
 ### Instruções
 Para desenvolvimento use a branch `dev`
